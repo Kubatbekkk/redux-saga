@@ -1,17 +1,32 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react"
+import ReactDOM from "react-dom/client"
+import { Provider } from "react-redux"
+import { compose, createStore, applyMiddleware } from "redux"
+import thunk from "redux-thunk"
+import createSagaMiddleware from "@redux-saga/core"
+import "./index.css"
+import App from "./App"
+import { rootReducer } from "./redux/rootreducer"
+import { forbiddenWordsMiddleWare } from "./redux/middleWare"
+import { sagaWatcher } from "./redux/sagas"
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
+const saga = createSagaMiddleware()
+
+const store = createStore(
+  rootReducer,
+  compose(
+    applyMiddleware(thunk, forbiddenWordsMiddleWare, saga),
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  )
+)
+
+saga.run(sagaWatcher)
+
+const app = (
+  <Provider store={store}>
     <App />
-  </React.StrictMode>
-);
+  </Provider>
+)
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+const root = ReactDOM.createRoot(document.getElementById("root"))
+root.render(<React.StrictMode>{app}</React.StrictMode>)
